@@ -1,0 +1,44 @@
+diff --git a/dist/config/index.js b/dist/config/index.js
+index 5bc6ed732b4a0288845d1dec33babd7c3dae8551..dfd996d6878494c7f8cfcf5ad744359300a79548 100644
+--- a/dist/config/index.js
++++ b/dist/config/index.js
+@@ -14,6 +14,10 @@ import { sanitizeChunkFileName, toPickId } from "./fs-routes/tree-shake.js";
+ import lazy from "./lazy.js";
+ import { manifest } from "./manifest.js";
+ import { parseIdQuery } from "./utils.js";
++// The dev overlay is served unbundled (solid packages are excluded from
++// pre-bundling), and with the "browser" condition @jridgewell/trace-mapping
++// imports the UMD build of @jridgewell/resolve-uri, which has no ESM exports.
++const DEV_OVERLAY_DEPENDENCIES = ["@solidjs/start > @jridgewell/trace-mapping"];
+ const absolute = (path, root) => path ? (isAbsolute(path) ? path : join(root, path)) : path;
+ // the same test Vite applies to an external base
+ const externalUrlRE = /^([a-z]+:)?\/\//;
+@@ -80,10 +84,16 @@ export function solidStart(options) {
+         {
+             name: "solid-start:config",
+             enforce: "pre",
+-            configEnvironment(name) {
++            configEnvironment(name, config) {
++                // Setting resolve.conditions replaces Vite's defaults instead of extending
++                // them. Server environments drop "node" on purpose, so that h3 resolves to
++                // its runtime-agnostic build, but the client must keep "browser" and
++                // "module": without them, packages exposing a "browser" export condition
++                // resolve to their Node build in the browser.
++                const isClient = name === VITE_ENVIRONMENTS.client || config.consumer === "client";
+                 return {
+                     resolve: {
+-                        conditions: ["generic"],
++                        ...(isClient ? {} : { conditions: ["generic"] }),
+                         // remove when https://github.com/solidjs/vite-plugin-solid/pull/228 is released
+                         externalConditions: ["solid", "node"],
+                     },
+@@ -129,6 +139,9 @@ export function solidStart(options) {
+                     environments: {
+                         [VITE_ENVIRONMENTS.client]: {
+                             consumer: "client",
++                            ...(env.command === "serve" && start.devOverlay
++                                ? { optimizeDeps: { include: DEV_OVERLAY_DEPENDENCIES } }
++                                : {}),
+                             build: {
+                                 write: true,
+                                 manifest: true,

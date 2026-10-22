@@ -1,0 +1,26 @@
+{
+  "name": "solid-start-client-conditions",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "start": "node .output/server/index.mjs",
+    "preview": "vite preview",
+    "check": "node check.mjs",
+    "check:dev-overlay": "node check-dev-overlay.mjs"
+  },
+  "dependencies": {
+    "@solidjs/meta": "^0.29.4",
+    "@solidjs/router": "^1.0.0",
+    "@solidjs/start": "2.1.0",
+    "env-probe": "file:./packages/env-probe",
+    "nitro": "^3.0.260610-beta",
+    "solid-js": "^1.9.14",
+    "vite": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {},
+  "private": true
+}

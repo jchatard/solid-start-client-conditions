@@ -1,0 +1,13 @@
+{
+  "name": "env-probe",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Same export layout as @sentry/solidstart: browser build, Node build as fallback.",
+  "exports": {
+    ".": {
+      "browser": "./client.js",
+      "node": "./server.js",
+      "default": "./server.js"
+    }
+  }
+}
